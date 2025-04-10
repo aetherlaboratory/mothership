@@ -2,39 +2,52 @@
 
 import React, { useState, useEffect } from 'react'
 import { Formik, Form, Field } from 'formik'
-import axios from 'axios'
+import { getUserData } from '@/app/utils/api'
+import { postAppointment } from '@/app/utils/crudAppointment'
 
 export default function AppointmentForm({ selectedDate, slotRange, slotSize, startHour, onComplete }) {
   const [user, setUser] = useState(null)
   const [token, setToken] = useState(null)
   const [loading, setLoading] = useState(true)
   const [statusMessage, setStatusMessage] = useState({ type: null, text: '' })
+  const [generatedTitle, setGeneratedTitle] = useState('')
 
   useEffect(() => {
-    const checkUser = () => {
-      const storedToken = localStorage.getItem('userToken')
-      const storedUser = localStorage.getItem('userData')
+    const storedToken = localStorage.getItem('userToken')
+    if (!storedToken) {
+      setUser(null)
+      setLoading(false)
+      return
+    }
 
-      if (storedToken && storedUser) {
-        try {
-          setUser(JSON.parse(storedUser))
+    const fetchUser = async () => {
+      try {
+        const userData = await getUserData(storedToken)
+        if (userData) {
+          setUser(userData)
           setToken(storedToken)
-        } catch (e) {
-          console.error('❌ Failed to parse userData:', e)
+
+          const userKey = `appt-count-${userData.id}`
+          const currentCount = parseInt(localStorage.getItem(userKey) || '0', 10)
+          const nextCount = currentCount + 1
+          const title = `${userData.name || userData.username} Appointment ${nextCount}`
+          setGeneratedTitle(title)
+        } else {
+          setUser(null)
         }
+      } catch (error) {
+        console.error(error)
+        setUser(null)
       }
 
       setLoading(false)
     }
 
-    checkUser()
-    window.addEventListener('storage', checkUser)
-    return () => window.removeEventListener('storage', checkUser)
+    fetchUser()
   }, [])
 
   const initialValues = {
     notes: '',
-    appointment_type: '',
     image_gallery: [],
   }
 
@@ -45,10 +58,17 @@ export default function AppointmentForm({ selectedDate, slotRange, slotSize, sta
       return
     }
 
+    const userKey = `appt-count-${user.id}`
+    const currentCount = parseInt(localStorage.getItem(userKey) || '0', 10)
+    const nextCount = currentCount + 1
+    const title = `${user.name || user.username} Appointment ${nextCount}`
+    localStorage.setItem(userKey, nextCount.toString())
+
     const payload = {
+      title,
       appointment_date: selectedDate.toISOString().split('T')[0],
-      start_time: slotRange.startLabel,
-      end_time: slotRange.endLabel,
+      start_time: slotRange.startLabel || slotRange.start || '',
+      end_time: slotRange.endLabel || slotRange.end || '',
       user_id: user.id,
       user_name: user.username || user.name,
       slot_type: slotSize + 'hr',
@@ -57,18 +77,19 @@ export default function AppointmentForm({ selectedDate, slotRange, slotSize, sta
       ...values,
     }
 
+    console.log('🧾 Final appointment payload:', payload)
+
     try {
-      const res = await axios.post(
-        'https://mothership.wordifysites.com/wp-json/custom/v1/appointments',
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      )
+      await postAppointment(token, payload)
+
       setStatusMessage({ type: 'success', text: 'Appointment booked successfully!' })
+
+      window.dispatchEvent(
+        new CustomEvent('notify', {
+          detail: { message: '📅 Appointment submitted for review!', type: 'success' },
+        })
+      )
+
       onComplete?.()
     } catch (err) {
       console.error(err)
@@ -78,7 +99,13 @@ export default function AppointmentForm({ selectedDate, slotRange, slotSize, sta
     }
   }
 
-  if (loading) return null
+  if (loading) {
+    return (
+      <div className="mt-6 border-t pt-4 text-sm text-gray-600 bg-gray-50 border rounded p-4">
+        ⏳ Checking login status before showing form...
+      </div>
+    )
+  }
 
   return (
     <div className="mt-6 border-t pt-4">
@@ -86,7 +113,7 @@ export default function AppointmentForm({ selectedDate, slotRange, slotSize, sta
 
       <div className="text-sm bg-gray-50 p-3 rounded border mb-4">
         <p><strong>Date:</strong> {selectedDate.toDateString()}</p>
-        <p><strong>Time:</strong> {slotRange.startLabel} → {slotRange.endLabel}</p>
+        <p><strong>Time:</strong> {slotRange.startLabel || slotRange.start} → {slotRange.endLabel || slotRange.end}</p>
         <p><strong>Duration:</strong> {slotSize} {slotSize > 1 ? 'Hours' : 'Hour'}</p>
         <p className="text-blue-600 mt-2">📌 All appointments are pending and will be reviewed.</p>
       </div>
@@ -94,14 +121,14 @@ export default function AppointmentForm({ selectedDate, slotRange, slotSize, sta
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
         {({ isSubmitting }) => (
           <Form className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Appointment Type</label>
-              <Field
-                type="text"
-                name="appointment_type"
-                className="w-full border rounded p-2 text-sm"
-              />
-            </div>
+            {generatedTitle && (
+              <div>
+                <label className="block text-sm font-medium mb-1 text-gray-700">Appointment Title</label>
+                <div className="p-2 text-sm bg-gray-100 border rounded text-gray-700">
+                  {generatedTitle}
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium mb-1">Notes</label>
@@ -120,7 +147,7 @@ export default function AppointmentForm({ selectedDate, slotRange, slotSize, sta
               </div>
             </div>
 
-            {user ? (
+            {user && (user.name || user.username) ? (
               <div className="flex justify-between items-center">
                 <button
                   type="submit"

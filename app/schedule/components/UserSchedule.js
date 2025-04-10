@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ScheduleLoginForm from '@/app/components/ScheduleLoginForm'
 import RegisterForm from '@/app/components/RegisterForm'
-import { getUserData } from "@/app/utils/api";
-// import { loginUser } from '@/app/lib/loginUser'
+import { getUserData } from '@/app/utils/api'
 
 export default function UserSchedule() {
   const router = useRouter()
@@ -47,7 +46,13 @@ export default function UserSchedule() {
     fetchUser()
   }, [])
 
-  if (loading) return null
+  if (loading) {
+    return (
+      <div className="border rounded bg-gray-100 p-4 mb-4 text-sm text-gray-600">
+        ⏳ Checking login status...
+      </div>
+    )
+  }
 
   if (user && (user.name || user.username)) {
     return (
