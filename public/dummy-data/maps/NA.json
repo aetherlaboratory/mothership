@@ -1,0 +1,111 @@
+[
+    {
+      "id": "cust-us-001",
+      "fullName": "Ava Carter",
+      "location": {
+        "continent": "North America",
+        "country": "United States",
+        "state": "California",
+        "city": "San Francisco",
+        "postalCode": "94103",
+        "lat": 37.7749,
+        "lng": -122.4194
+      },
+      "demographics": {
+        "age": 29,
+        "gender": "Female",
+        "ethnicity": "Hispanic",
+        "language": "English"
+      },
+      "engagement": {
+        "productsOwned": 4,
+        "downloads": 52,
+        "subscriptions": 2,
+        "eventsAttended": 3,
+        "appointmentsBooked": 1,
+        "musicStreams": 87,
+        "videosWatched": 120
+      },
+      "spending": {
+        "lifetimeValue": 1940.50,
+        "lastPurchase": "2025-03-15",
+        "averageOrderValue": 138.61
+      },
+      "lastActivity": "2025-04-01T16:33:00Z",
+      "activeFilters": ["products", "downloads", "music", "videos", "subscriptions"],
+      "tags": ["VIP", "West Coast", "Music Enthusiast"]
+    },
+    {
+      "id": "cust-ca-001",
+      "fullName": "Jaxon Tremblay",
+      "location": {
+        "continent": "North America",
+        "country": "Canada",
+        "state": "Ontario",
+        "city": "Toronto",
+        "postalCode": "M5H 2N2",
+        "lat": 43.6532,
+        "lng": -79.3832
+      },
+      "demographics": {
+        "age": 35,
+        "gender": "Male",
+        "ethnicity": "Caucasian",
+        "language": "English"
+      },
+      "engagement": {
+        "productsOwned": 1,
+        "downloads": 18,
+        "subscriptions": 1,
+        "eventsAttended": 0,
+        "appointmentsBooked": 2,
+        "musicStreams": 32,
+        "videosWatched": 45
+      },
+      "spending": {
+        "lifetimeValue": 710.00,
+        "lastPurchase": "2025-02-10",
+        "averageOrderValue": 88.75
+      },
+      "lastActivity": "2025-04-03T09:12:00Z",
+      "activeFilters": ["downloads", "appointments", "videos"],
+      "tags": ["Northern Market", "Casual User"]
+    },
+    {
+      "id": "cust-mx-001",
+      "fullName": "Lucía Herrera",
+      "location": {
+        "continent": "North America",
+        "country": "Mexico",
+        "state": "Jalisco",
+        "city": "Guadalajara",
+        "postalCode": "44100",
+        "lat": 20.6597,
+        "lng": -103.3496
+      },
+      "demographics": {
+        "age": 42,
+        "gender": "Female",
+        "ethnicity": "Latina",
+        "language": "Spanish"
+      },
+      "engagement": {
+        "productsOwned": 3,
+        "downloads": 23,
+        "subscriptions": 3,
+        "eventsAttended": 2,
+        "appointmentsBooked": 0,
+        "musicStreams": 110,
+        "videosWatched": 88
+      },
+      "spending": {
+        "lifetimeValue": 1312.75,
+        "lastPurchase": "2025-03-22",
+        "averageOrderValue": 119.34
+      },
+      "lastActivity": "2025-04-02T21:08:00Z",
+      "activeFilters": ["subscriptions", "music", "products"],
+      "tags": ["Spanish Speaker", "High Engagement", "Southwest Region"]
+    }
+  ]
+  

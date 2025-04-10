@@ -1,0 +1,67 @@
+[
+  {
+    "id": 1,
+    "title": "Grilled Ribeye Steak",
+    "content": "Juicy ribeye grilled to perfection, seasoned with sea salt and rosemary butter.",
+    "featured_image": "/dummy-data/food/steak1.jpg",
+    "price": "24.99",
+    "prep_time": "20 min",
+    "food_steps": [
+      "Season the steak with salt and pepper",
+      "Grill over high heat for 6 minutes per side",
+      "Rest before serving with herb butter"
+    ],
+    "food_gallery": [
+      "/dummy-data/food/steak1.jpg",
+      "/dummy-data/food/steak1.jpg"
+    ],
+    "categories": ["Meat", "Main Course"]
+  },
+  {
+    "id": 2,
+    "title": "House Caesar Salad",
+    "content": "Crisp romaine lettuce tossed with Caesar dressing, croutons, and shaved parmesan.",
+    "featured_image": "/dummy-data/food/salad1.png",
+    "price": "8.50",
+    "prep_time": "10 min",
+    "food_steps": [
+      "Chop and rinse romaine",
+      "Toss with Caesar dressing and croutons",
+      "Top with parmesan and cracked pepper"
+    ],
+    "food_gallery": [
+      "/dummy-data/food/salad1.png"
+    ],
+    "categories": ["Vegetarian", "Side"]
+  },
+  {
+    "id": 3,
+    "title": "Chocolate Lava Cake",
+    "content": "Rich molten chocolate cake with a warm gooey center, served with vanilla ice cream.",
+    "featured_image": "/dummy-data/food/cake1.jpg",
+    "price": "6.75",
+    "prep_time": "12 min",
+    "food_steps": [
+      "Mix chocolate and batter",
+      "Bake until outer layer is firm",
+      "Serve warm with ice cream"
+    ],
+    "food_gallery": [],
+    "categories": ["Dessert"]
+  },
+  {
+    "id": 4,
+    "title": "Fresh Squeezed Lemonade",
+    "content": "Tangy and refreshing lemonade made with real lemons and cane sugar.",
+    "featured_image": "/dummy-data/food/lemonade.jpg",
+    "price": "3.25",
+    "prep_time": "5 min",
+    "food_steps": [
+      "Juice fresh lemons",
+      "Add water and cane sugar",
+      "Serve over ice"
+    ],
+    "food_gallery": [],
+    "categories": ["Drinks"]
+  }
+]

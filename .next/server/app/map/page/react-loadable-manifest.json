@@ -1,0 +1,10 @@
+{
+  "[project]/app/map/components/WorldMapView.js [app-client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/app/map/components/WorldMapView.js [app-client] (ecmascript, next/dynamic entry)",
+    "files": [
+      "static/chunks/node_modules_0a14b907._.js",
+      "static/chunks/app_map_components_59b8c584._.js",
+      "static/chunks/app_map_components_WorldMapView_60bac479.js"
+    ]
+  }
+}

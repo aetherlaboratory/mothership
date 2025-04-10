@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 6, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"","debugId":null}},
+    {"offset": {"line": 24, "column": 0}, "map": {"version":3,"sources":["file:///Users/goldtome/Desktop/mothership/app/page.js"],"sourcesContent":["import Image from \"next/image\";\n\n\n\n// app/page.js\nexport default function HomePage() {\n  return (\n    <div>\n  \n           </div>\n  );\n}\n\n"],"names":[],"mappings":";;;;AAAA;;;AAKe,SAAS;IACtB,qBACE,8OAAC;;;;;AAIL","debugId":null}}]
+}
