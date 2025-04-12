@@ -24,6 +24,7 @@ import {
     History,
     FormInput,
     Calendar,
+    CalendarCheck,
     Ticket,
     Mail,
     MessageCircle,
@@ -89,6 +90,7 @@ import {
       icon: Briefcase,
       children: [
         { label: "Schedule", href: "/schedule", icon: Calendar },
+        { label: "Appointments", href: "/appointments", icon: CalendarCheck },
         { label: "Events", href: "/events", icon: Calendar },
         { label: "Tickets", href: "/tickets", icon: Ticket },
         { label: "Form Builder", href: "/form", icon: FormInput },

@@ -5,6 +5,18 @@ import { Formik, Form, Field } from 'formik'
 import { getUserData } from '@/app/utils/api'
 import { postAppointment } from '@/app/utils/crudAppointment'
 
+// convert AM/PM time strings like "7:30 AM" to "07:30"
+function convertTo24Hour(timeStr) {
+  if (!timeStr) return ''
+  const [time, modifier] = timeStr.split(' ')
+  let [hours, minutes] = time.split(':')
+
+  if (hours === '12') hours = '00'
+  if (modifier === 'PM' && hours !== '00') hours = (parseInt(hours) + 12).toString()
+
+  return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`
+}
+
 export default function AppointmentForm({ selectedDate, slotRange, slotSize, startHour, onComplete }) {
   const [user, setUser] = useState(null)
   const [token, setToken] = useState(null)
@@ -67,8 +79,8 @@ export default function AppointmentForm({ selectedDate, slotRange, slotSize, sta
     const payload = {
       title,
       appointment_date: selectedDate.toISOString().split('T')[0],
-      start_time: slotRange.startLabel || slotRange.start || '',
-      end_time: slotRange.endLabel || slotRange.end || '',
+      start_time: convertTo24Hour(slotRange.startLabel || slotRange.start),
+      end_time: convertTo24Hour(slotRange.endLabel || slotRange.end),
       user_id: user.id,
       user_name: user.username || user.name,
       slot_type: slotSize + 'hr',
@@ -76,8 +88,6 @@ export default function AppointmentForm({ selectedDate, slotRange, slotSize, sta
       status: 'pending',
       ...values,
     }
-
-    console.log('🧾 Final appointment payload:', payload)
 
     try {
       await postAppointment(token, payload)
