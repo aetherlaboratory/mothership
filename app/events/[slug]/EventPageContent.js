@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import {
   CalendarDays,
@@ -22,7 +22,6 @@ export default function EventPageContent({ event }) {
     event_country,
     event_date,
     event_capacity,
-    event_tiers,
   } = meta || {};
 
   const location = [event_address_1, event_city, event_state, event_country]
@@ -32,6 +31,24 @@ export default function EventPageContent({ event }) {
   const formattedDate = event_date
     ? format(new Date(event_date), 'MMMM d, yyyy')
     : 'Date TBA';
+
+  const [ticketTiers, setTicketTiers] = useState([]);
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const res = await fetch(`/api/tickets/by-event?eventId=${id}`);
+        if (!res.ok) throw new Error('Failed to fetch tickets');
+        const data = await res.json();
+        const sorted = data.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+        setTicketTiers(sorted);
+      } catch (e) {
+        console.error('⚠️ Failed to load ticket tiers:', e);
+      }
+    };
+
+    if (id) fetchTickets();
+  }, [id]);
 
   return (
     <div className="w-full">
@@ -72,15 +89,19 @@ export default function EventPageContent({ event }) {
             </div>
           )}
 
-          {event_tiers && (
+          {ticketTiers.length > 0 && (
             <div className="bg-gray-100 rounded-xl p-4 shadow-sm">
               <h3 className="text-lg font-semibold mb-2 flex items-center">
                 <Ticket size={18} className="mr-2 text-indigo-600" />
                 Ticket Tiers
               </h3>
               <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
-                {Array.from({ length: parseInt(event_tiers) }, (_, i) => (
-                  <li key={i}>Ticket Rank {i + 1}</li>
+                {ticketTiers.map((ticket) => (
+                  <li key={ticket.id}>
+                    {ticket.name} - 
+                    <span className="text-emerald-700"> $ {ticket.price}</span>
+                  
+                  </li>
                 ))}
               </ul>
             </div>
