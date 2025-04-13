@@ -32,6 +32,7 @@ import {
     VideoIcon,
     Mic,
     Map,
+    ConciergeBell
   } from "lucide-react";
   
   export const navItems = [
@@ -95,6 +96,7 @@ import {
         { label: "Tickets", href: "/tickets", icon: Ticket },
         { label: "Form Builder", href: "/form", icon: FormInput },
         { label: "Restaurant Menu", href: "/menu", icon: ClipboardList },
+        { label: "Food Orders", href: "/food-orders", icon: ConciergeBell },
       ],
     },
     {
