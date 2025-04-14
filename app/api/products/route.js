@@ -1,3 +1,5 @@
+
+//app/api/products/route.js
 import axios from 'axios';
 
 export async function GET() {
