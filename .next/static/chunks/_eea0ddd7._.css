@@ -1599,6 +1599,10 @@
     background-position: center;
   }
 
+  .fill-red-500 {
+    fill: var(--color-red-500);
+  }
+
   .object-contain {
     -o-object-fit: contain;
     object-fit: contain;
@@ -2256,6 +2260,12 @@
   @media (hover: hover) {
     .hover\:bg-emerald-700:hover {
       background-color: var(--color-emerald-700);
+    }
+  }
+
+  @media (hover: hover) {
+    .hover\:bg-gray-50:hover {
+      background-color: var(--color-gray-50);
     }
   }
 

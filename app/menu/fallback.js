@@ -1,14 +1,33 @@
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+'use client'
 
-function normalizeImage(path) {
-  if (!path) return ''
-  return path.startsWith('http') ? path : `${baseUrl}${path}`
+import dummyData from '../../public/dummy-data/menuDummyData.json'
+
+// ✅ Determine how the app is being accessed
+function getEnvironmentHost() {
+  if (typeof window === 'undefined') return 'localhost'
+  return window.location.hostname
 }
 
+// ✅ Determine app’s local frontend base for relative image normalization
+function getBaseUrl() {
+  const host = getEnvironmentHost()
+  if (host.startsWith('192.168.')) return 'http://192.168.1.185:3000'
+  return 'http://localhost:3000'
+}
 
+// ✅ Normalize images from dummy or custom post meta
+function normalizeImage(path) {
+  if (!path) return ''
+  return path.startsWith('http') ? path : `${getBaseUrl()}${path}`
+}
+
+// ✅ Main data loader for foodmenu content
 export default async function loadMenuWithFallback() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_WP}/custom/v1/foodmenu`, {
+    // ✅ Always use actual WordPress API for foodmenu content
+    const wpApiBase = 'https://mothership.wordifysites.com/wp-json'
+
+    const res = await fetch(`${wpApiBase}/custom/v1/foodmenu`, {
       cache: 'no-store',
     })
 
@@ -38,14 +57,12 @@ export default async function loadMenuWithFallback() {
       categories: post.categories || [],
     }))
   } catch (error) {
-    console.error('Error loading food menu:', error)
+    console.error('❌ Error loading food menu:', error)
     return normalizeDummyData()
   }
 }
 
-// Normalizes dummy JSON entries
-import dummyData from '../../public/dummy-data/menuDummyData.json'
-
+// ✅ Normalizes dummy data if WP fetch fails
 function normalizeDummyData() {
   return dummyData.map(item => ({
     id: item.id,

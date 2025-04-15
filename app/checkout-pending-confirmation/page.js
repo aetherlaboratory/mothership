@@ -1,5 +1,7 @@
 "use client";
 
+//app /checkout-pending-confirmation/page.js
+
 import { useEffect, useState } from "react";
 
 const CheckoutConfirmationPage = () => {

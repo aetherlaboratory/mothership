@@ -1,33 +1,25 @@
-// app/menu/page.js
-
 'use client'
 
 import { useEffect, useState } from 'react'
 import { LayoutGrid, List } from 'lucide-react'
 import LayoutCard from './layoutCard'
 import LayoutClassic from './layoutClassic'
-// import fetchMenuData from './data'
 import loadMenuWithFallback from './fallback'
-
+import useAuthGuard from '../hooks/useAuthGuard'
 
 export default function MenuPage() {
-  // Holds all foodmenu posts
+  const { user, loading } = useAuthGuard()
+
   const [menuItems, setMenuItems] = useState([])
-  // Current selected layout type: 'card' or 'classic'
   const [layout, setLayout] = useState('card')
-  // Current active category filter
   const [activeCategory, setActiveCategory] = useState('All')
-  // All categories extracted from the posts
   const [categories, setCategories] = useState(['All'])
 
-  // Fetch menu items on mount
   useEffect(() => {
     async function loadData() {
-    const items = await loadMenuWithFallback()
-
+      const items = await loadMenuWithFallback()
       setMenuItems(items)
 
-      // Extract unique categories from items
       const foundCategories = new Set()
       items.forEach(item => {
         if (Array.isArray(item.categories)) {
@@ -40,12 +32,25 @@ export default function MenuPage() {
     loadData()
   }, [])
 
-  // Filter items based on selected category
+  if (loading) {
+    return (
+      <div className="text-center py-10 text-gray-600">
+        ⏳ Checking login status...
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="text-center py-10 text-red-600">
+        🔐 You must be logged in to view the menu.
+      </div>
+    )
+  }
+
   const filteredItems = activeCategory === 'All'
     ? menuItems
-    : menuItems.filter(item =>
-        item.categories?.includes(activeCategory)
-      )
+    : menuItems.filter(item => item.categories?.includes(activeCategory))
 
   return (
     <div className="p-6 space-y-6">
@@ -83,7 +88,7 @@ export default function MenuPage() {
         ))}
       </div>
 
-      {/* Render selected layout with filtered data */}
+      {/* Render Layout */}
       {layout === 'card' ? (
         <LayoutCard items={filteredItems} />
       ) : (

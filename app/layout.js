@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import { useState } from "react";
 import "./globals.css";
@@ -11,14 +11,17 @@ import Providers from "./providers";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Provider } from 'react-redux';
 import musicStore from './amplitude/redux/store';
-import store from './videos/store/store'; // ✅ Video.js Redux store
+import store from './videos/store/store';
 import { MusicProvider } from "./context/MusicContext";
 import useBodyClass from './hooks/useBodyClass'
-import ModalManager from "./components/modalManager";      // ✅ New: Modal system wrapper
-import SiteFooter from "./components/siteFooter";          // ✅ New: Footer with modal tabs
+import ModalManager from "./components/modalManager";
+import SiteFooter from "./components/siteFooter";
 import GlobalLoader from './loading/components/GlobalLoader';
 import 'animate.css';
 import SearchSite from './components/SearchSite'
+
+// ✅ New import
+import { FoodOrderProvider } from "./context/FoodOrderContext";
 
 export default function RootLayout({ children }) {
   useBodyClass()
@@ -32,24 +35,24 @@ export default function RootLayout({ children }) {
       <body>
         <SessionProvider>
           <AuthProvider>
-            {/* <MusicProvider> */}
             <CartProvider>
-              <Nav />
-              <QueryClientProvider client={queryClient}>
-                <Providers>
-                  <Provider store={musicStore}>
-                    <ModalManager> {/* ✅ Wrap everything to enable global modals */}
-                           <GlobalLoader />
-                           <SearchSite />
-                      {children}
-                      <SiteFooter /> {/* ✅ Footer visible on all pages */}
-                    </ModalManager>
-                  </Provider>
-                </Providers>
-              </QueryClientProvider>
-              <Notifications />
+              <FoodOrderProvider> {/* ✅ Isolated provider */}
+                <Nav />
+                <QueryClientProvider client={queryClient}>
+                  <Providers>
+                    <Provider store={musicStore}>
+                      <ModalManager>
+                        <GlobalLoader />
+                        <SearchSite />
+                        {children}
+                        <SiteFooter />
+                      </ModalManager>
+                    </Provider>
+                  </Providers>
+                </QueryClientProvider>
+                <Notifications />
+              </FoodOrderProvider>
             </CartProvider>
-            {/* </MusicProvider> */}
           </AuthProvider>
         </SessionProvider>
       </body>

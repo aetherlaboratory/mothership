@@ -1,3 +1,10 @@
 git add .
-git commit -m ""
+git commit -m "added react joyride for guided tours, and albus for multi step wizard"
+git push
+
+
+
+
+git add app/api && \
+git commit -m "I updated my api, added route folders for all post types"
 git push

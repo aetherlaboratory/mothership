@@ -1,5 +1,7 @@
 'use client'
 
+//app/checkout/page.js
+
 import { useCart } from 'react-use-cart'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
