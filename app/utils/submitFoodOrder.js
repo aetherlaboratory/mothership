@@ -1,18 +1,20 @@
 import axios from 'axios'
 
-// ✅ Submits food order to a custom WP REST route (to be created in PHP)
-export default async function submitFoodOrder({ user, orders, allergy }) {
+export default async function submitFoodOrder({ user, orders, allergy, notes, method = 'CashApp', paid = false }) {
   try {
     const token = localStorage.getItem('userToken')
 
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_API_WP}/custom/v1/submit-food-order`,
       {
-        user_id: user.id,
-        user_email: user.email,
-        orders,
+        user_name: user?.name || user?.username || 'Unknown',
+        user_email: user?.email || '',
+        items: orders,
+        method,
+        paid,
+        total: orders.reduce((sum, item) => sum + parseFloat(item.price || 0), 0),
         allergy_note: allergy,
-        submitted_at: new Date().toISOString()
+        notes
       },
       {
         headers: {
@@ -23,9 +25,8 @@ export default async function submitFoodOrder({ user, orders, allergy }) {
     )
 
     return { success: true, data: response.data }
-
   } catch (error) {
-    console.error("❌ Error submitting food order:", error)
+    console.error('❌ submitFoodOrder failed:', error)
     return {
       success: false,
       error: error.response?.data?.message || error.message
