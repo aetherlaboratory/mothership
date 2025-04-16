@@ -1,5 +1,5 @@
 git add .
-git commit -m "Complete Food Menu, Food Orders and All Food Orders Page, All Food Orders Needs FETCH"
+git commit -m "Food Orders Successfully Implimented, User and Order Allergies Implimented"
 git push
 
 

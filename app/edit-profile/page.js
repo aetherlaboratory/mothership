@@ -198,7 +198,7 @@ const EditProfilePage = () => {
 
         {/* Allergy Multi-Select */}
         <div>
-          <label className="block font-medium">Allergies (Hold Shift For Multi Select)</label>
+          <label className="block font-medium">Allergies (Hold Shift For Multi Select / CMD or CTRL to Deselect)</label>
           <select
             multiple
             value={selectedAllergies}
