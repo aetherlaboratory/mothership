@@ -262,3 +262,39 @@ export const getAdminToken = async () => {
     return null;
   }
 };
+
+
+
+/**
+ * ✅ Update WooCommerce Customer Billing Info
+ * This should be called alongside updateProfile() to sync billing data properly.
+ * @param {string} userId - WordPress/WooCommerce User ID
+ * @param {object} billing - { city, state, country, postcode }
+ */
+export const updateWooCustomer = async (userId, billing) => {
+  try {
+    const response = await axios.put(
+      `${WOOCOMMERCE_API_URL}/customers/${userId}`,
+      {
+        billing: {
+          ...billing,
+        },
+        shipping: {
+          ...billing, // ✅ Optional: also update shipping
+        },
+      },
+      {
+        auth: {
+          username: CONSUMER_KEY,
+          password: CONSUMER_SECRET,
+        },
+      }
+    );
+
+    console.log("✅ WooCommerce Customer Billing Updated:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Woo customer update failed:", error.response?.data || error.message);
+    return null;
+  }
+};

@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useState } from "react";
 import "./globals.css";
@@ -13,18 +13,20 @@ import { Provider } from 'react-redux';
 import musicStore from './amplitude/redux/store';
 import store from './videos/store/store';
 import { MusicProvider } from "./context/MusicContext";
-import useBodyClass from './hooks/useBodyClass'
+import useBodyClass from './hooks/useBodyClass';
 import ModalManager from "./components/modalManager";
 import SiteFooter from "./components/siteFooter";
 import GlobalLoader from './loading/components/GlobalLoader';
 import 'animate.css';
-import SearchSite from './components/SearchSite'
-
-// ✅ New import
+import SearchSite from './components/SearchSite';
 import { FoodOrderProvider } from "./context/FoodOrderContext";
 
+// ✅ ADD: Global media modal support
+import { MediaManagerProvider } from './media/MediaManager/MediaManagerProvider';
+import { MediaManagerModal } from './media/MediaManager/MediaManagerModal';
+
 export default function RootLayout({ children }) {
-  useBodyClass()
+  useBodyClass();
   const [queryClient] = useState(() => new QueryClient());
 
   return (
@@ -36,21 +38,24 @@ export default function RootLayout({ children }) {
         <SessionProvider>
           <AuthProvider>
             <CartProvider>
-              <FoodOrderProvider> {/* ✅ Isolated provider */}
-                <Nav />
-                <QueryClientProvider client={queryClient}>
-                  <Providers>
-                    <Provider store={musicStore}>
-                      <ModalManager>
-                        <GlobalLoader />
-                        <SearchSite />
-                        {children}
-                        <SiteFooter />
-                      </ModalManager>
-                    </Provider>
-                  </Providers>
-                </QueryClientProvider>
-                <Notifications />
+              <FoodOrderProvider>
+                <MediaManagerProvider> {/* ✅ Wrap entire app */}
+                  <MediaManagerModal /> {/* ✅ Render modal once globally */}
+                  <Nav />
+                  <QueryClientProvider client={queryClient}>
+                    <Providers>
+                      <Provider store={musicStore}>
+                        <ModalManager>
+                          <GlobalLoader />
+                          <SearchSite />
+                          {children}
+                          <SiteFooter />
+                        </ModalManager>
+                      </Provider>
+                    </Providers>
+                  </QueryClientProvider>
+                  <Notifications />
+                </MediaManagerProvider>
               </FoodOrderProvider>
             </CartProvider>
           </AuthProvider>

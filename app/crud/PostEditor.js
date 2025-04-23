@@ -1,26 +1,34 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import { Formik, Form, Field } from 'formik';
-import { useSession } from 'next-auth/react';
+import useAuth from '@/app/hooks/useAuth';
 
 import { fetchPost, updatePost } from './fetch/blogFetch';
 import { fetchVideo, updateVideo } from './fetch/videoFetch';
 import { fetchAudio, updateAudio } from './fetch/audioFetch';
-import { fetchArtwork, updateArtwork } from './fetch/artworkFetch';
 import { fetchPhoto, updatePhoto } from './fetch/photographyFetch';
 import { fetchEvent, updateEvent } from './fetch/eventFetch';
 import { fetch3d, update3d } from './fetch/models3dFetch';
 
+import EventMetaFields from './meta-fields/EventMetaFields';
+import FilmMetaFields from './meta-fields/FilmMetaFields';
+import AudioMetaFields from './meta-fields/AudioMetaFields';
+import Photo2DArtMetaFields from './meta-fields/Photo2DArtMetaFields';
+import ThreeDArtMetaFields from './meta-fields/ThreeDArtMetaFields';
+
+import MediaPickerField from '@/app/components/form/MediaPickerField';
+
 export default function PostEditor({ postId, source = 'wp', slug }) {
-  const { data: session } = useSession();
+  const { user, loading } = useAuth();
   const [initialValues, setInitialValues] = useState(null);
 
   const fetchMap = {
     post: fetchPost,
     film: fetchVideo,
     audio: fetchAudio,
-    artwork: fetchArtwork,
     photos: fetchPhoto,
+    '2dart': fetchPhoto,
     event: fetchEvent,
     '3dart': fetch3d
   };
@@ -29,14 +37,23 @@ export default function PostEditor({ postId, source = 'wp', slug }) {
     post: updatePost,
     film: updateVideo,
     audio: updateAudio,
-    artwork: updateArtwork,
     photos: updatePhoto,
+    '2dart': updatePhoto,
     event: updateEvent,
     '3dart': update3d
   };
 
   const fetchFunc = fetchMap[slug] || fetchPost;
   const updateFunc = updateMap[slug] || updatePost;
+
+  const MetaFieldsComponent = {
+    event: EventMetaFields,
+    film: FilmMetaFields,
+    audio: AudioMetaFields,
+    photos: Photo2DArtMetaFields,
+    '2dart': Photo2DArtMetaFields,
+    '3dart': ThreeDArtMetaFields
+  }[slug] || (() => null);
 
   useEffect(() => {
     if (!postId || !fetchFunc) return;
@@ -57,13 +74,18 @@ export default function PostEditor({ postId, source = 'wp', slug }) {
       });
   }, [postId, source, fetchFunc]);
 
-  if (!initialValues) return <p>Loading post…</p>;
+  if (!initialValues || loading) return <p>Loading post…</p>;
 
   return (
     <Formik
       initialValues={initialValues}
       enableReinitialize
       onSubmit={async (values) => {
+        if (!user?.token) {
+          alert('Not authenticated. Please log in.');
+          return;
+        }
+
         try {
           await updateFunc(
             postId,
@@ -72,7 +94,7 @@ export default function PostEditor({ postId, source = 'wp', slug }) {
               content: { rendered: values.content },
               meta: values.meta
             },
-            session?.user?.token,
+            user.token,
             source
           );
           alert('Post updated!');
@@ -83,35 +105,23 @@ export default function PostEditor({ postId, source = 'wp', slug }) {
       }}
     >
       <Form className="flex flex-col gap-4">
-        {initialValues.featured && (
-          <img
-            src={initialValues.featured}
-            alt="Featured"
-            className="rounded w-full max-w-xs mb-4 border"
-          />
-        )}
-
         <label className="font-medium">Title</label>
         <Field name="title" className="border p-2 w-full" />
 
         <label className="font-medium">Content</label>
         <Field name="content" as="textarea" rows="10" className="border p-2 w-full" />
 
-        {/* Add meta fields here */}
-        <label className="font-medium">Event Image URL</label>
-        <Field name="meta.event_image" className="border p-2 w-full" />
+        {/* ✅ Blog Featured Image via media modal */}
+        {slug === 'post' && (
+          <MediaPickerField
+            name="meta.featured_image"
+            label="Featured Image"
+            buttonLabel="Choose Image"
+          />
+        )}
 
-        <label className="font-medium">Event City</label>
-        <Field name="meta.event_city" className="border p-2 w-full" />
-
-        <label className="font-medium">Event State</label>
-        <Field name="meta.event_state" className="border p-2 w-full" />
-
-        <label className="font-medium">Event Capacity</label>
-        <Field name="meta.event_capacity" type="number" className="border p-2 w-full" />
-
-        <label className="font-medium">Event Tiers</label>
-        <Field name="meta.event_tiers" type="number" className="border p-2 w-full" />
+        {/* ✅ Post-type-specific meta fields */}
+        <MetaFieldsComponent />
 
         <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
           Save Post

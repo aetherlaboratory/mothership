@@ -13,6 +13,7 @@ __turbopack_context__.s({
     "loginUser": (()=>loginUser),
     "registerUser": (()=>registerUser),
     "updateProfile": (()=>updateProfile),
+    "updateWooCustomer": (()=>updateWooCustomer),
     "uploadProfilePicture": (()=>uploadProfilePicture)
 });
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$polyfills$2f$process$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/build/polyfills/process.js [app-client] (ecmascript)");
@@ -182,6 +183,28 @@ const getAdminToken = async ()=>{
         return response.data.token;
     } catch (error) {
         console.error("❌ Failed to retrieve admin token:", error.response?.data || error.message);
+        return null;
+    }
+};
+const updateWooCustomer = async (userId, billing)=>{
+    try {
+        const response = await __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib$2f$axios$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].put(`${WOOCOMMERCE_API_URL}/customers/${userId}`, {
+            billing: {
+                ...billing
+            },
+            shipping: {
+                ...billing
+            }
+        }, {
+            auth: {
+                username: CONSUMER_KEY,
+                password: CONSUMER_SECRET
+            }
+        });
+        console.log("✅ WooCommerce Customer Billing Updated:", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("❌ Woo customer update failed:", error.response?.data || error.message);
         return null;
     }
 };

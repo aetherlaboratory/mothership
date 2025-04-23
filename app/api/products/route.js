@@ -1,10 +1,10 @@
+// app/api/products/route.js
 
-//app/api/products/route.js
 import axios from 'axios';
 
 export async function GET() {
   try {
-    const url = `${process.env.NEXT_PUBLIC_WOOCOMMERCE_STORE_URL}/wp-json/wc/v3/products`;
+    const url = `${process.env.NEXT_PUBLIC_WOOCOMMERCE_STORE_URL}/wp-json/wc/v3/products?per_page=100`;
 
     console.log("🌐 Requesting:", url);
     console.log("🔐 Using Key:", process.env.NEXT_PUBLIC_WOOCOMMERCE_CONSUMER_KEY?.slice(0, 10), "...");
@@ -16,10 +16,31 @@ export async function GET() {
       },
     });
 
-    // 🧼 Exclude downloadable products
-    const nonDownloadableProducts = response.data.filter(product => !product.downloadable);
+    const allProducts = response.data;
 
-    return new Response(JSON.stringify(nonDownloadableProducts), {
+    const filtered = allProducts.filter(product => {
+      const isDownloadable = product.downloadable === true;
+
+      const tags = product.tags || [];
+      const hasExcludedTag = tags.some(tag => {
+        const slug = tag?.slug?.toLowerCase?.() || '';
+        return slug === 'subscription-plan' || slug.includes('ticket');
+      });
+
+      const shouldInclude = !isDownloadable && !hasExcludedTag;
+
+      console.log(`🧪 [${product.name}]`, {
+        isDownloadable,
+        hasExcludedTag,
+        shouldInclude,
+      });
+
+      return shouldInclude;
+    });
+
+    console.log("🎯 Products after filtering:", filtered.length);
+
+    return new Response(JSON.stringify(filtered), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

@@ -1,48 +1,55 @@
-// File: /app/media/MediaManager/MediaManagerProvider.js
-// Description: Context provider to control global media modal state, selection, and media list refresh
+'use client';
 
-'use client'
+import React, { createContext, useState, useCallback } from 'react';
+import { getAllMedia } from '@/app/media/mediaActions';
 
-import React, { createContext, useState, useCallback } from 'react'
-import { getAllMedia } from '@/app/media/mediaActions'
+// ✅ Context object
+export const MediaManagerContext = createContext();
 
-// Context object
-export const MediaManagerContext = createContext()
-
-// Provider component
+// ✅ Provider component
 export function MediaManagerProvider({ children }) {
-  const [isOpen, setIsOpen] = useState(false)              // Modal state
-  const [selectedMedia, setSelectedMedia] = useState(null) // Media selection
-  const [mediaItems, setMediaItems] = useState([])         // List of media items
-  const [loading, setLoading] = useState(false)            // Loading state
+  const [isOpen, setIsOpen] = useState(false);              // Modal state
+  const [selectedMedia, setSelectedMedia] = useState(null); // Media selection
+  const [mediaItems, setMediaItems] = useState([]);         // Media list
+  const [loading, setLoading] = useState(false);            // Loading state
+  const [onSelectCallback, setOnSelectCallback] = useState(null); // ✅ Callback for insert
 
-  // Open modal
-  const openModal = useCallback(() => setIsOpen(true), [])
+  // ✅ Open modal and optionally pass a callback
+  const openModal = useCallback((callback) => {
+    setOnSelectCallback(() => callback || null);
+    setIsOpen(true);
+  }, []);
 
-  // Close modal
+  // ✅ Close modal and reset state
   const closeModal = useCallback(() => {
-    setIsOpen(false)
-    setSelectedMedia(null)
-  }, [])
+    setIsOpen(false);
+    setSelectedMedia(null);
+    setOnSelectCallback(null);
+  }, []);
 
-  // Select media item
+  // ✅ Select media and trigger callback
   const selectMedia = useCallback((media) => {
-    setSelectedMedia(media)
-  }, [])
+    setSelectedMedia(media);
 
-  // Refresh media from WordPress
-  const refreshMediaLibrary = useCallback(async () => {
-    setLoading(true)
-    try {
-      const data = await getAllMedia({ per_page: 40 })
-      setMediaItems(data)
-    } catch (err) {
-      console.error('❌ Failed to refresh media:', err)
+    // ✅ If a callback was provided, run it and close the modal
+    if (onSelectCallback && media?.source_url) {
+      onSelectCallback(media.source_url);
+      closeModal();
     }
-    setLoading(false)
-  }, [])
+  }, [onSelectCallback, closeModal]);
 
-  // Provide everything via context
+  // ✅ Load media list from WordPress
+  const refreshMediaLibrary = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getAllMedia({ per_page: 40 });
+      setMediaItems(data);
+    } catch (err) {
+      console.error('❌ Failed to refresh media:', err);
+    }
+    setLoading(false);
+  }, []);
+
   return (
     <MediaManagerContext.Provider
       value={{
@@ -58,5 +65,5 @@ export function MediaManagerProvider({ children }) {
     >
       {children}
     </MediaManagerContext.Provider>
-  )
+  );
 }

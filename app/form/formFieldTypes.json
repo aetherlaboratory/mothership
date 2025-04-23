@@ -1,0 +1,196 @@
+{
+    "steps": [
+      {
+        "title": "Untitled Step",
+        "conditional": {
+          "field": "", 
+          "value": "", 
+          "logic": "equals" 
+        },
+        "fields": []
+      }
+    ],
+    "fieldTypes": [
+      {
+        "type": "text",
+        "label": "Text",
+        "icon": "Type",
+        "default": { "placeholder": "Enter text..." }
+      },
+      {
+        "type": "textarea",
+        "label": "Paragraph",
+        "icon": "AlignLeft",
+        "default": { "placeholder": "Write your response..." }
+      },
+      {
+        "type": "email",
+        "label": "Email",
+        "icon": "Mail",
+        "default": { "placeholder": "example@domain.com" }
+      },
+      {
+        "type": "number",
+        "label": "Number",
+        "icon": "Hash",
+        "default": { "placeholder": "123" }
+      },
+      {
+        "type": "select",
+        "label": "Dropdown",
+        "icon": "List",
+        "default": { "options": ["Option 1", "Option 2"] }
+      },
+      {
+        "type": "checkbox",
+        "label": "Checkboxes",
+        "icon": "CheckSquare",
+        "default": { "options": ["Option 1", "Option 2"] }
+      },
+      {
+        "type": "radio",
+        "label": "Radio Buttons",
+        "icon": "Dot",
+        "default": { "options": ["Yes", "No"] }
+      },
+      {
+        "type": "date",
+        "label": "Date",
+        "icon": "Calendar",
+        "default": {}
+      },
+      {
+        "type": "time",
+        "label": "Time",
+        "icon": "Clock",
+        "default": {}
+      },
+      {
+        "type": "phone",
+        "label": "Phone",
+        "icon": "Phone",
+        "default": { "placeholder": "(555) 555-5555" }
+      },
+      {
+        "type": "url",
+        "label": "Website",
+        "icon": "Globe",
+        "default": { "placeholder": "https://..." }
+      },
+      {
+        "type": "file",
+        "label": "File Upload",
+        "icon": "Upload",
+        "default": {}
+      },
+      {
+        "type": "password",
+        "label": "Password",
+        "icon": "Key",
+        "default": { "placeholder": "********" }
+      },
+      {
+        "type": "hidden",
+        "label": "Hidden",
+        "icon": "EyeOff",
+        "default": { "value": "" }
+      },
+      {
+        "type": "html",
+        "label": "HTML Block",
+        "icon": "Code2",
+        "default": { "content": "<h2>Section Title</h2>" }
+      },
+      {
+        "type": "section",
+        "label": "Section Break",
+        "icon": "LayoutGrid",
+        "default": {}
+      },
+      {
+        "type": "repeater",
+        "label": "Repeater",
+        "icon": "Repeat",
+        "default": { "fields": [] }
+      },
+      {
+        "type": "rating",
+        "label": "Star Rating",
+        "icon": "Star",
+        "default": { "max": 5 }
+      },
+      {
+        "type": "signature",
+        "label": "Signature",
+        "icon": "PenTool",
+        "default": {}
+      },
+      {
+        "type": "product_selector",
+        "label": "Woo Product",
+        "icon": "Package",
+        "default": { "source": "product" }
+      },
+      {
+        "type": "event_picker",
+        "label": "Event Picker",
+        "icon": "CalendarCheck",
+        "default": { "source": "event" }
+      },
+      {
+        "type": "food_menu",
+        "label": "Food Menu",
+        "icon": "Utensils",
+        "default": { "source": "food" }
+      },
+      {
+        "type": "user_lookup",
+        "label": "User Info",
+        "icon": "User",
+        "default": {}
+      },
+      {
+        "type": "post_reference",
+        "label": "Post Reference",
+        "icon": "FilePlus",
+        "default": { "post_type": "custom" }
+      },
+      {
+        "type": "icon_radio",
+        "label": "Icon Radio Buttons",
+        "icon": "CircleDot",
+        "default": {
+          "options": ["Option 1", "Option 2"]
+        }
+      },
+      {
+        "type": "icon_checkbox",
+        "label": "Icon Checkboxes",
+        "icon": "Star",
+        "default": {
+          "options": ["Option 1", "Option 2"]
+        }
+      },
+      {
+        "type": "user_selector",
+        "label": "User Picker",
+        "icon": "Users",
+        "default": {
+          "multiple": true
+        }
+      },
+      {
+        "type": "post_selector",
+        "label": "Post Picker",
+        "icon": "ListOrdered",
+        "default": {
+          "post_type": "product",
+          "multiple": true
+        }
+      }
+      
+      
+      
+    ]
+  }
+  

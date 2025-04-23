@@ -8,3 +8,8 @@ git push
 git add app/api && \
 git commit -m "I updated my api, added route folders for all post types"
 git push
+
+
+git add .
+git commit -m "Updated Allergies label"
+git push

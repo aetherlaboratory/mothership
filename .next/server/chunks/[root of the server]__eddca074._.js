@@ -154,6 +154,7 @@ module.exports = mod;
 
 var { g: global, __dirname } = __turbopack_context__;
 {
+// app/api/products/route.js
 __turbopack_context__.s({
     "GET": (()=>GET)
 });
@@ -161,7 +162,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib
 ;
 async function GET() {
     try {
-        const url = `${("TURBOPACK compile-time value", "https://mothership.wordifysites.com")}/wp-json/wc/v3/products`;
+        const url = `${("TURBOPACK compile-time value", "https://mothership.wordifysites.com")}/wp-json/wc/v3/products?per_page=100`;
         console.log("🌐 Requesting:", url);
         console.log("🔐 Using Key:", ("TURBOPACK compile-time value", "ck_10613e4b0ff53998462aca063e2147ff17405411")?.slice(0, 10), "...");
         const response = await __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib$2f$axios$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].get(url, {
@@ -170,9 +171,24 @@ async function GET() {
                 password: ("TURBOPACK compile-time value", "cs_599880dc4ad10bf4107916c1768a6354b8ab3247")
             }
         });
-        // 🧼 Exclude downloadable products
-        const nonDownloadableProducts = response.data.filter((product)=>!product.downloadable);
-        return new Response(JSON.stringify(nonDownloadableProducts), {
+        const allProducts = response.data;
+        const filtered = allProducts.filter((product)=>{
+            const isDownloadable = product.downloadable === true;
+            const tags = product.tags || [];
+            const hasExcludedTag = tags.some((tag)=>{
+                const slug = tag?.slug?.toLowerCase?.() || '';
+                return slug === 'subscription-plan' || slug.includes('ticket');
+            });
+            const shouldInclude = !isDownloadable && !hasExcludedTag;
+            console.log(`🧪 [${product.name}]`, {
+                isDownloadable,
+                hasExcludedTag,
+                shouldInclude
+            });
+            return shouldInclude;
+        });
+        console.log("🎯 Products after filtering:", filtered.length);
+        return new Response(JSON.stringify(filtered), {
             status: 200,
             headers: {
                 'Content-Type': 'application/json'

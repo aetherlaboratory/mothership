@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import useAuthGuard from '../hooks/useAuthGuard';
-import { uploadProfilePicture, updateProfile } from '../utils/api';
+import { uploadProfilePicture, updateProfile, updateWooCustomer } from '../utils/api';
 import LogoutButton from '../components/LogoutButton';
 
 const allergyOptions = ['Peanuts', 'Shellfish', 'Lactose', 'Gluten', 'Soy', 'Eggs'];
@@ -19,12 +19,8 @@ const EditProfilePage = () => {
   const fileInputRef = useRef();
 
   useEffect(() => {
-    if (user?.custom_profile_image) {
-      setImagePreview(user.custom_profile_image);
-    }
-    if (user?.user_allergies) {
-      setSelectedAllergies(user.user_allergies);
-    }
+    if (user?.custom_profile_image) setImagePreview(user.custom_profile_image);
+    if (user?.user_allergies) setSelectedAllergies(user.user_allergies);
   }, [user]);
 
   const handleImageChange = async (event) => {
@@ -58,6 +54,10 @@ const EditProfilePage = () => {
       email: user?.email || '',
       phone: user?.billing_phone || '',
       website: user?.user_website || user?.url || '',
+      billing_city: user?.billing?.city || '',
+      billing_state: user?.billing?.state || '',
+      billing_country: user?.billing?.country || '',
+      billing_postcode: user?.billing?.postcode || '',
     },
     validationSchema: Yup.object({
       first_name: Yup.string().required('Required'),
@@ -84,9 +84,18 @@ const EditProfilePage = () => {
         user_allergies: selectedAllergies,
       };
 
+      // ✅ Step 1: Update WordPress Profile
       const result = await updateProfile(token, updateData);
 
+      // ✅ Step 2: Update WooCommerce Billing Info
       if (result) {
+        await updateWooCustomer(user.id, {
+          city: values.billing_city,
+          state: values.billing_state,
+          country: values.billing_country,
+          postcode: values.billing_postcode,
+        });
+
         window.dispatchEvent(new CustomEvent("notify", {
           detail: { message: `✅ Profile saved successfully.`, type: "success" },
         }));
@@ -100,9 +109,7 @@ const EditProfilePage = () => {
     }
   });
 
-  if (loading || !user) {
-    return <p className="text-center text-lg">🔄 Loading profile...</p>;
-  }
+  if (loading || !user) return <p className="text-center text-lg">🔄 Loading profile...</p>;
 
   return (
     <div className="max-w-2xl mx-auto mt-10 p-6 border rounded-lg shadow-md bg-white">
@@ -145,60 +152,48 @@ const EditProfilePage = () => {
 
       {/* 📝 Form */}
       <form onSubmit={formik.handleSubmit} className="space-y-4">
-        {/* First Name */}
         <div>
           <label className="block font-medium">First Name</label>
           <input type="text" {...formik.getFieldProps('first_name')} className="w-full p-2 border rounded" />
-          {formik.touched.first_name && formik.errors.first_name && (
-            <p className="text-red-500 text-sm">{formik.errors.first_name}</p>
-          )}
         </div>
-
-        {/* Last Name */}
         <div>
           <label className="block font-medium">Last Name</label>
           <input type="text" {...formik.getFieldProps('last_name')} className="w-full p-2 border rounded" />
-          {formik.touched.last_name && formik.errors.last_name && (
-            <p className="text-red-500 text-sm">{formik.errors.last_name}</p>
-          )}
         </div>
-
-        {/* Nickname */}
         <div>
           <label className="block font-medium">Nickname</label>
           <input type="text" {...formik.getFieldProps('nickname')} className="w-full p-2 border rounded" />
-          {formik.touched.nickname && formik.errors.nickname && (
-            <p className="text-red-500 text-sm">{formik.errors.nickname}</p>
-          )}
         </div>
-
-        {/* Email */}
         <div>
           <label className="block font-medium">Email</label>
           <input type="email" {...formik.getFieldProps('email')} className="w-full p-2 border rounded" disabled />
         </div>
-
-        {/* Phone */}
         <div>
           <label className="block font-medium">Phone</label>
           <input type="text" {...formik.getFieldProps('phone')} className="w-full p-2 border rounded" />
-          {formik.touched.phone && formik.errors.phone && (
-            <p className="text-red-500 text-sm">{formik.errors.phone}</p>
-          )}
         </div>
-
-        {/* Website */}
         <div>
           <label className="block font-medium">Website</label>
           <input type="text" {...formik.getFieldProps('website')} className="w-full p-2 border rounded" />
-          {formik.touched.website && formik.errors.website && (
-            <p className="text-red-500 text-sm">{formik.errors.website}</p>
-          )}
         </div>
-
-        {/* Allergy Multi-Select */}
         <div>
-          <label className="block font-medium">Allergies (Hold Shift For Multi Select / CMD or CTRL to Deselect)</label>
+          <label className="block font-medium">City</label>
+          <input type="text" {...formik.getFieldProps('billing_city')} className="w-full p-2 border rounded" />
+        </div>
+        <div>
+          <label className="block font-medium">State</label>
+          <input type="text" {...formik.getFieldProps('billing_state')} className="w-full p-2 border rounded" />
+        </div>
+        <div>
+          <label className="block font-medium">Country</label>
+          <input type="text" {...formik.getFieldProps('billing_country')} className="w-full p-2 border rounded" />
+        </div>
+        <div>
+          <label className="block font-medium">Zip Code</label>
+          <input type="text" {...formik.getFieldProps('billing_postcode')} className="w-full p-2 border rounded" />
+        </div>
+        <div>
+          <label className="block font-medium">Allergies</label>
           <select
             multiple
             value={selectedAllergies}
@@ -224,7 +219,7 @@ const EditProfilePage = () => {
         </button>
       </form>
 
-      <div className='flex flex-wrap justify-center'>
+      <div className='flex flex-wrap justify-center mt-4'>
         <LogoutButton />
       </div>
     </div>

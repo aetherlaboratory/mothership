@@ -13,6 +13,7 @@ __turbopack_context__.s({
     "loginUser": (()=>loginUser),
     "registerUser": (()=>registerUser),
     "updateProfile": (()=>updateProfile),
+    "updateWooCustomer": (()=>updateWooCustomer),
     "uploadProfilePicture": (()=>uploadProfilePicture)
 });
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib$2f$axios$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/axios/lib/axios.js [app-ssr] (ecmascript)");
@@ -184,6 +185,28 @@ const getAdminToken = async ()=>{
         return null;
     }
 };
+const updateWooCustomer = async (userId, billing)=>{
+    try {
+        const response = await __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib$2f$axios$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].put(`${WOOCOMMERCE_API_URL}/customers/${userId}`, {
+            billing: {
+                ...billing
+            },
+            shipping: {
+                ...billing
+            }
+        }, {
+            auth: {
+                username: CONSUMER_KEY,
+                password: CONSUMER_SECRET
+            }
+        });
+        console.log("✅ WooCommerce Customer Billing Updated:", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("❌ Woo customer update failed:", error.response?.data || error.message);
+        return null;
+    }
+};
 }}),
 "[project]/app/hooks/useAuthGuard.js [app-ssr] (ecmascript)": ((__turbopack_context__) => {
 "use strict";
@@ -271,12 +294,8 @@ const EditProfilePage = ()=>{
     const [selectedAllergies, setSelectedAllergies] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
     const fileInputRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])();
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
-        if (user?.custom_profile_image) {
-            setImagePreview(user.custom_profile_image);
-        }
-        if (user?.user_allergies) {
-            setSelectedAllergies(user.user_allergies);
-        }
+        if (user?.custom_profile_image) setImagePreview(user.custom_profile_image);
+        if (user?.user_allergies) setSelectedAllergies(user.user_allergies);
     }, [
         user
     ]);
@@ -312,7 +331,11 @@ const EditProfilePage = ()=>{
             nickname: user?.nickname || '',
             email: user?.email || '',
             phone: user?.billing_phone || '',
-            website: user?.user_website || user?.url || ''
+            website: user?.user_website || user?.url || '',
+            billing_city: user?.billing?.city || '',
+            billing_state: user?.billing?.state || '',
+            billing_country: user?.billing?.country || '',
+            billing_postcode: user?.billing?.postcode || ''
         },
         validationSchema: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$yup$2f$index$2e$esm$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["object"])({
             first_name: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$yup$2f$index$2e$esm$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["string"])().required('Required'),
@@ -336,8 +359,16 @@ const EditProfilePage = ()=>{
                 custom_profile_image: profileImage || user?.custom_profile_image || null,
                 user_allergies: selectedAllergies
             };
+            // ✅ Step 1: Update WordPress Profile
             const result = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$utils$2f$api$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["updateProfile"])(token, updateData);
+            // ✅ Step 2: Update WooCommerce Billing Info
             if (result) {
+                await (0, __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$utils$2f$api$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["updateWooCustomer"])(user.id, {
+                    city: values.billing_city,
+                    state: values.billing_state,
+                    country: values.billing_country,
+                    postcode: values.billing_postcode
+                });
                 window.dispatchEvent(new CustomEvent("notify", {
                     detail: {
                         message: `✅ Profile saved successfully.`,
@@ -355,16 +386,14 @@ const EditProfilePage = ()=>{
             setFormSaving(false);
         }
     });
-    if (loading || !user) {
-        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-            className: "text-center text-lg",
-            children: "🔄 Loading profile..."
-        }, void 0, false, {
-            fileName: "[project]/app/edit-profile/page.js",
-            lineNumber: 104,
-            columnNumber: 12
-        }, this);
-    }
+    if (loading || !user) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+        className: "text-center text-lg",
+        children: "🔄 Loading profile..."
+    }, void 0, false, {
+        fileName: "[project]/app/edit-profile/page.js",
+        lineNumber: 112,
+        columnNumber: 32
+    }, this);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "max-w-2xl mx-auto mt-10 p-6 border rounded-lg shadow-md bg-white",
         children: [
@@ -373,7 +402,7 @@ const EditProfilePage = ()=>{
                 children: "Edit Profile"
             }, void 0, false, {
                 fileName: "[project]/app/edit-profile/page.js",
-                lineNumber: 109,
+                lineNumber: 116,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -388,12 +417,12 @@ const EditProfilePage = ()=>{
                                     className: "w-full h-full rounded-full border-4 border-blue-400 animate-spin-slow"
                                 }, void 0, false, {
                                     fileName: "[project]/app/edit-profile/page.js",
-                                    lineNumber: 116,
+                                    lineNumber: 123,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 115,
+                                lineNumber: 122,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -404,25 +433,25 @@ const EditProfilePage = ()=>{
                                     className: "w-full h-full object-cover"
                                 }, void 0, false, {
                                     fileName: "[project]/app/edit-profile/page.js",
-                                    lineNumber: 121,
+                                    lineNumber: 128,
                                     columnNumber: 15
                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "w-full h-full bg-gray-200 flex items-center justify-center text-gray-500",
                                     children: "No Image"
                                 }, void 0, false, {
                                     fileName: "[project]/app/edit-profile/page.js",
-                                    lineNumber: 123,
+                                    lineNumber: 130,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 119,
+                                lineNumber: 126,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/edit-profile/page.js",
-                        lineNumber: 113,
+                        lineNumber: 120,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -433,7 +462,7 @@ const EditProfilePage = ()=>{
                         className: "hidden"
                     }, void 0, false, {
                         fileName: "[project]/app/edit-profile/page.js",
-                        lineNumber: 129,
+                        lineNumber: 136,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -444,13 +473,13 @@ const EditProfilePage = ()=>{
                         children: imageUploading ? "Uploading..." : "Upload Image"
                     }, void 0, false, {
                         fileName: "[project]/app/edit-profile/page.js",
-                        lineNumber: 136,
+                        lineNumber: 143,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/edit-profile/page.js",
-                lineNumber: 112,
+                lineNumber: 119,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -464,7 +493,7 @@ const EditProfilePage = ()=>{
                                 children: "First Name"
                             }, void 0, false, {
                                 fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 150,
+                                lineNumber: 156,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -473,21 +502,13 @@ const EditProfilePage = ()=>{
                                 className: "w-full p-2 border rounded"
                             }, void 0, false, {
                                 fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 151,
+                                lineNumber: 157,
                                 columnNumber: 11
-                            }, this),
-                            formik.touched.first_name && formik.errors.first_name && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                className: "text-red-500 text-sm",
-                                children: formik.errors.first_name
-                            }, void 0, false, {
-                                fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 153,
-                                columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/edit-profile/page.js",
-                        lineNumber: 149,
+                        lineNumber: 155,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -497,7 +518,7 @@ const EditProfilePage = ()=>{
                                 children: "Last Name"
                             }, void 0, false, {
                                 fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 159,
+                                lineNumber: 160,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -506,21 +527,13 @@ const EditProfilePage = ()=>{
                                 className: "w-full p-2 border rounded"
                             }, void 0, false, {
                                 fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 160,
+                                lineNumber: 161,
                                 columnNumber: 11
-                            }, this),
-                            formik.touched.last_name && formik.errors.last_name && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                className: "text-red-500 text-sm",
-                                children: formik.errors.last_name
-                            }, void 0, false, {
-                                fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 162,
-                                columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/edit-profile/page.js",
-                        lineNumber: 158,
+                        lineNumber: 159,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -530,7 +543,7 @@ const EditProfilePage = ()=>{
                                 children: "Nickname"
                             }, void 0, false, {
                                 fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 168,
+                                lineNumber: 164,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -539,16 +552,34 @@ const EditProfilePage = ()=>{
                                 className: "w-full p-2 border rounded"
                             }, void 0, false, {
                                 fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 169,
+                                lineNumber: 165,
                                 columnNumber: 11
-                            }, this),
-                            formik.touched.nickname && formik.errors.nickname && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                className: "text-red-500 text-sm",
-                                children: formik.errors.nickname
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/edit-profile/page.js",
+                        lineNumber: 163,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                className: "block font-medium",
+                                children: "Email"
                             }, void 0, false, {
                                 fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 171,
-                                columnNumber: 13
+                                lineNumber: 168,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                type: "email",
+                                ...formik.getFieldProps('email'),
+                                className: "w-full p-2 border rounded",
+                                disabled: true
+                            }, void 0, false, {
+                                fileName: "[project]/app/edit-profile/page.js",
+                                lineNumber: 169,
+                                columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
@@ -560,36 +591,10 @@ const EditProfilePage = ()=>{
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
                                 className: "block font-medium",
-                                children: "Email"
-                            }, void 0, false, {
-                                fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 177,
-                                columnNumber: 11
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                type: "email",
-                                ...formik.getFieldProps('email'),
-                                className: "w-full p-2 border rounded",
-                                disabled: true
-                            }, void 0, false, {
-                                fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 178,
-                                columnNumber: 11
-                            }, this)
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/app/edit-profile/page.js",
-                        lineNumber: 176,
-                        columnNumber: 9
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                className: "block font-medium",
                                 children: "Phone"
                             }, void 0, false, {
                                 fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 183,
+                                lineNumber: 172,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -598,21 +603,13 @@ const EditProfilePage = ()=>{
                                 className: "w-full p-2 border rounded"
                             }, void 0, false, {
                                 fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 184,
+                                lineNumber: 173,
                                 columnNumber: 11
-                            }, this),
-                            formik.touched.phone && formik.errors.phone && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                className: "text-red-500 text-sm",
-                                children: formik.errors.phone
-                            }, void 0, false, {
-                                fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 186,
-                                columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/edit-profile/page.js",
-                        lineNumber: 182,
+                        lineNumber: 171,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -622,7 +619,7 @@ const EditProfilePage = ()=>{
                                 children: "Website"
                             }, void 0, false, {
                                 fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 192,
+                                lineNumber: 176,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -631,16 +628,108 @@ const EditProfilePage = ()=>{
                                 className: "w-full p-2 border rounded"
                             }, void 0, false, {
                                 fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 193,
+                                lineNumber: 177,
                                 columnNumber: 11
-                            }, this),
-                            formik.touched.website && formik.errors.website && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                className: "text-red-500 text-sm",
-                                children: formik.errors.website
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/edit-profile/page.js",
+                        lineNumber: 175,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                className: "block font-medium",
+                                children: "City"
                             }, void 0, false, {
                                 fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 195,
-                                columnNumber: 13
+                                lineNumber: 180,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                type: "text",
+                                ...formik.getFieldProps('billing_city'),
+                                className: "w-full p-2 border rounded"
+                            }, void 0, false, {
+                                fileName: "[project]/app/edit-profile/page.js",
+                                lineNumber: 181,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/edit-profile/page.js",
+                        lineNumber: 179,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                className: "block font-medium",
+                                children: "State"
+                            }, void 0, false, {
+                                fileName: "[project]/app/edit-profile/page.js",
+                                lineNumber: 184,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                type: "text",
+                                ...formik.getFieldProps('billing_state'),
+                                className: "w-full p-2 border rounded"
+                            }, void 0, false, {
+                                fileName: "[project]/app/edit-profile/page.js",
+                                lineNumber: 185,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/edit-profile/page.js",
+                        lineNumber: 183,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                className: "block font-medium",
+                                children: "Country"
+                            }, void 0, false, {
+                                fileName: "[project]/app/edit-profile/page.js",
+                                lineNumber: 188,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                type: "text",
+                                ...formik.getFieldProps('billing_country'),
+                                className: "w-full p-2 border rounded"
+                            }, void 0, false, {
+                                fileName: "[project]/app/edit-profile/page.js",
+                                lineNumber: 189,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/edit-profile/page.js",
+                        lineNumber: 187,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                className: "block font-medium",
+                                children: "Zip Code"
+                            }, void 0, false, {
+                                fileName: "[project]/app/edit-profile/page.js",
+                                lineNumber: 192,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                type: "text",
+                                ...formik.getFieldProps('billing_postcode'),
+                                className: "w-full p-2 border rounded"
+                            }, void 0, false, {
+                                fileName: "[project]/app/edit-profile/page.js",
+                                lineNumber: 193,
+                                columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
@@ -652,10 +741,10 @@ const EditProfilePage = ()=>{
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
                                 className: "block font-medium",
-                                children: "Allergies (Hold Shift For Multi Select / CMD or CTRL to Deselect)"
+                                children: "Allergies"
                             }, void 0, false, {
                                 fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 201,
+                                lineNumber: 196,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -668,18 +757,18 @@ const EditProfilePage = ()=>{
                                         children: allergy
                                     }, allergy, false, {
                                         fileName: "[project]/app/edit-profile/page.js",
-                                        lineNumber: 211,
+                                        lineNumber: 206,
                                         columnNumber: 15
                                     }, this))
                             }, void 0, false, {
                                 fileName: "[project]/app/edit-profile/page.js",
-                                lineNumber: 202,
+                                lineNumber: 197,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/edit-profile/page.js",
-                        lineNumber: 200,
+                        lineNumber: 195,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -689,31 +778,31 @@ const EditProfilePage = ()=>{
                         children: formSaving ? 'Saving...' : 'Save Changes'
                     }, void 0, false, {
                         fileName: "[project]/app/edit-profile/page.js",
-                        lineNumber: 216,
+                        lineNumber: 211,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/edit-profile/page.js",
-                lineNumber: 147,
+                lineNumber: 154,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "flex flex-wrap justify-center",
+                className: "flex flex-wrap justify-center mt-4",
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$app$2f$components$2f$LogoutButton$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
                     fileName: "[project]/app/edit-profile/page.js",
-                    lineNumber: 228,
+                    lineNumber: 223,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/edit-profile/page.js",
-                lineNumber: 227,
+                lineNumber: 222,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/edit-profile/page.js",
-        lineNumber: 108,
+        lineNumber: 115,
         columnNumber: 5
     }, this);
 };

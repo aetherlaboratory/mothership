@@ -5,71 +5,36 @@
 // Handles GET and PUT requests to WordPress REST API for blog posts
 // ==============================
 
-import blogDummyData from '../../dummy-data/blogDummyData.json';
-import fs from 'fs/promises';
-import path from 'path';
-
 const API_URL = process.env.NEXT_PUBLIC_API_WP;
-const DUMMY_DATA_PATH = path.join(process.cwd(), 'app/dummy-data/blogDummyData.json');
 
-let isUsingDummy = false;
-
-// ✅ Load all posts (WordPress first, fallback to dummy)
+// ✅ Load all blog posts from WordPress
 export async function fetchPosts() {
   try {
-    const res = await fetch(`${API_URL}/wp/v2/posts?per_page=20`);
+    const res = await fetch(`${API_URL}/wp/v2/posts?per_page=20&_embed`);
     if (!res.ok) throw new Error('Failed to fetch WordPress posts');
     const data = await res.json();
-    isUsingDummy = false;
     return {
       source: 'wp',
       data
     };
   } catch (error) {
-    console.warn('[Fallback] Loading local dummy posts');
-    isUsingDummy = true;
-    return {
-      source: 'dummy',
-      data: blogDummyData
-    };
+    console.error('❌ Error fetching posts:', error);
+    throw error;
   }
 }
 
-// ✅ Load single post by ID
+// ✅ Load a single blog post by ID
 export async function fetchPost(id) {
-  if (isUsingDummy) {
-    const found = blogDummyData.find((item) => item.id === id);
-    if (!found) throw new Error('Dummy post not found');
-    return found;
-  }
-
-  const res = await fetch(`${API_URL}/wp/v2/posts/${id}`);
+  const res = await fetch(`${API_URL}/wp/v2/posts/${id}?_embed`);
   if (!res.ok) throw new Error('Failed to fetch WordPress post');
   return await res.json();
 }
 
-// ✅ Update a post (WordPress or dummy JSON file)
+// ✅ Update a blog post (with logging for debugging)
 export async function updatePost(id, newData, token) {
-  if (isUsingDummy) {
-    try {
-      const index = blogDummyData.findIndex((v) => v.id === id);
-      if (index === -1) throw new Error('Dummy post not found');
-
-      const updated = {
-        ...blogDummyData[index],
-        title: { rendered: newData.title },
-        content: { rendered: newData.content }
-      };
-
-      blogDummyData[index] = updated;
-      await fs.writeFile(DUMMY_DATA_PATH, JSON.stringify(blogDummyData, null, 2));
-
-      return updated;
-    } catch (err) {
-      console.error(err);
-      throw new Error('Failed to update dummy post');
-    }
-  }
+  console.log('📤 Updating post:', { id });
+  console.log('📦 Payload:', JSON.stringify(newData, null, 2));
+  console.log('🔐 Token:', token ? `${token.slice(0, 10)}...` : 'No token');
 
   const res = await fetch(`${API_URL}/wp/v2/posts/${id}`, {
     method: 'PUT',
@@ -80,6 +45,11 @@ export async function updatePost(id, newData, token) {
     body: JSON.stringify(newData)
   });
 
-  if (!res.ok) throw new Error('Failed to update WordPress post');
+  if (!res.ok) {
+    const errorBody = await res.json();
+    console.error('❌ Failed to update post:', errorBody);
+    throw new Error('Failed to update WordPress post');
+  }
+
   return await res.json();
 }

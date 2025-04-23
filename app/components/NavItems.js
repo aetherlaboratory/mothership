@@ -118,12 +118,9 @@ import {
       children: [
         { label: "Newsletter", href: "/newsletter", icon: Mail },
         { label: "Email", href: "/email", icon: Mail },
-        { label: "SMS", href: "/sms", icon: MessageCircle },
         { label: "Chat", href: "/chat", icon: MessageCircle },
         { label: "Stories", href: "/stories", icon: BookOpen },
         { label: "Forum", href: "/forum", icon: MessageCircle },
-        { label: "Live Video", href: "/live-video", icon: VideoIcon },
-        { label: "Live Audio", href: "/live-audio", icon: Mic },
       ],
     },
   ];

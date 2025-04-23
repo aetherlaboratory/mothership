@@ -1,5 +1,5 @@
 {
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/edit-profile/page": "app/edit-profile/page.js",
+  "/crud/page": "app/crud/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js"
 }
